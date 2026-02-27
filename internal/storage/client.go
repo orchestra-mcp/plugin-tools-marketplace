@@ -108,8 +108,16 @@ func (ps *PackStorage) ReadStacks(ctx context.Context) ([]string, int64, error) 
 
 // WriteStacks persists the configured stacks to storage.
 func (ps *PackStorage) WriteStacks(ctx context.Context, stacks []string, expectedVersion int64) (int64, error) {
-	m := map[string]any{"stacks": stacks}
-	meta, _ := structpb.NewStruct(m)
+	// structpb.NewStruct requires []any, not []string.
+	items := make([]any, len(stacks))
+	for i, s := range stacks {
+		items[i] = s
+	}
+	m := map[string]any{"stacks": items}
+	meta, err := structpb.NewStruct(m)
+	if err != nil {
+		return 0, fmt.Errorf("build stacks metadata: %w", err)
+	}
 	return ps.storageWrite(ctx, stacksPath, meta, nil, expectedVersion)
 }
 
