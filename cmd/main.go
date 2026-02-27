@@ -1,7 +1,11 @@
+// Command tools-marketplace is the entry point for the tools.marketplace plugin
+// binary. It provides 15 MCP tools for managing installable packs of skills,
+// agents, and hooks from GitHub repositories.
 package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -15,21 +19,30 @@ import (
 )
 
 func main() {
-	builder := plugin.New("tools.tools-marketplace").
+	workspace := flag.String("workspace", ".", "Root workspace directory")
+
+	builder := plugin.New("tools.marketplace").
 		Version("0.1.0").
-		Description("tools-marketplace tools plugin").
+		Description("Marketplace for installable packs of skills, agents, and hooks").
 		Author("Orchestra").
 		Binary("tools-marketplace").
 		NeedsStorage("markdown")
 
+	// Create a placeholder storage that will be wired after ParseFlags.
 	adapter := &clientAdapter{}
-	store := storage.NewDataStorage(adapter)
+	store := storage.NewPackStorage(adapter)
 
-	tp := &internal.ToolsPlugin{Storage: store}
-	tp.RegisterTools(builder)
+	mp := &internal.MarketplacePlugin{
+		Storage:   store,
+		Workspace: *workspace,
+	}
+	mp.RegisterTools(builder)
 
 	p := builder.BuildWithTools()
 	p.ParseFlags()
+
+	// Re-read workspace after flag.Parse has been called and re-wire.
+	mp.Workspace = *workspace
 	adapter.plugin = p
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -43,10 +56,13 @@ func main() {
 	}()
 
 	if err := p.Run(ctx); err != nil {
-		log.Fatalf("tools.tools-marketplace: %v", err)
+		log.Fatalf("tools.marketplace: %v", err)
 	}
 }
 
+// clientAdapter implements storage.StorageClient by forwarding to the plugin's
+// orchestrator client. This allows tool handlers to use storage operations
+// through the QUIC connection that is established during Run.
 type clientAdapter struct {
 	plugin *plugin.Plugin
 }
