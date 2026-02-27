@@ -110,23 +110,23 @@ orchestra pack recommend                  # Detect stacks & recommend packs
 
 | Pack | Stacks | Description |
 |------|--------|-------------|
-| pack-essentials | * | Core project management skills and agents |
-| pack-go-backend | go | Go backend skills (Fiber, GORM, REST) |
-| pack-rust-engine | rust | Rust engine skills (Tonic, Tree-sitter, Tantivy) |
-| pack-react-frontend | react, typescript | React frontend skills (Zustand, shadcn/ui) |
-| pack-database | * | Database skills (PostgreSQL, SQLite, Redis) |
-| pack-ai | * | AI/LLM integration skills |
-| pack-mobile | react-native | React Native mobile skills |
-| pack-desktop | go | Desktop app skills (Wails, macOS) |
-| pack-extensions | * | Extension system skills |
-| pack-chrome | typescript | Chrome extension skills |
-| pack-infra | docker | Infrastructure and DevOps skills |
-| pack-proto | go, rust | Protobuf/gRPC skills |
-| pack-native-swift | swift | Swift/macOS/iOS plugin skills |
-| pack-native-kotlin | kotlin, java | Kotlin/Android plugin skills |
-| pack-native-csharp | csharp | C#/Windows plugin skills |
-| pack-native-gtk | c | GTK4/Linux desktop skills |
-| pack-analytics | * | ClickHouse analytics skills |
+| [pack-essentials](https://github.com/orchestra-mcp/pack-essentials) | * | Core project management skills and agents |
+| [pack-go-backend](https://github.com/orchestra-mcp/pack-go-backend) | go | Go backend skills (Fiber, GORM, REST) |
+| [pack-rust-engine](https://github.com/orchestra-mcp/pack-rust-engine) | rust | Rust engine skills (Tonic, Tree-sitter, Tantivy) |
+| [pack-react-frontend](https://github.com/orchestra-mcp/pack-react-frontend) | react, typescript | React frontend skills (Zustand, shadcn/ui) |
+| [pack-database](https://github.com/orchestra-mcp/pack-database) | * | Database skills (PostgreSQL, SQLite, Redis) |
+| [pack-ai](https://github.com/orchestra-mcp/pack-ai) | * | AI/LLM integration skills |
+| [pack-mobile](https://github.com/orchestra-mcp/pack-mobile) | react-native | React Native mobile skills |
+| [pack-desktop](https://github.com/orchestra-mcp/pack-desktop) | go | Desktop app skills (Wails, macOS) |
+| [pack-extensions](https://github.com/orchestra-mcp/pack-extensions) | * | Extension system skills |
+| [pack-chrome](https://github.com/orchestra-mcp/pack-chrome) | typescript | Chrome extension skills |
+| [pack-infra](https://github.com/orchestra-mcp/pack-infra) | docker | Infrastructure and DevOps skills |
+| [pack-proto](https://github.com/orchestra-mcp/pack-proto) | go, rust | Protobuf/gRPC skills |
+| [pack-native-swift](https://github.com/orchestra-mcp/pack-native-swift) | swift | Swift/macOS/iOS plugin skills |
+| [pack-native-kotlin](https://github.com/orchestra-mcp/pack-native-kotlin) | kotlin, java | Kotlin/Android plugin skills |
+| [pack-native-csharp](https://github.com/orchestra-mcp/pack-native-csharp) | csharp | C#/Windows plugin skills |
+| [pack-native-gtk](https://github.com/orchestra-mcp/pack-native-gtk) | c | GTK4/Linux desktop skills |
+| [pack-analytics](https://github.com/orchestra-mcp/pack-analytics) | * | ClickHouse analytics skills |
 
 ## Related Packages
 
