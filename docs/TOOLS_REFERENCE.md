@@ -1,6 +1,6 @@
-# Tools Reference
+# Tools & Prompts Reference
 
-The `tools.marketplace` plugin provides 15 tools across 4 categories.
+The `tools.marketplace` plugin provides 15 tools across 4 categories and 5 MCP prompts.
 
 All tools accept arguments as a JSON object. Required fields are marked with **(required)**.
 
@@ -153,6 +153,62 @@ Persists to storage. Overrides auto-detection for `recommend_packs` and `get_pro
 Get the project's detected or configured stacks. No parameters.
 
 Returns configured stacks if set via `set_project_stacks`, otherwise falls back to auto-detection.
+
+---
+
+---
+
+## MCP Prompts (5)
+
+Prompts are parameter-driven message templates available via `prompts/list` and `prompts/get`. They return structured role-based messages that guide the AI through multi-step workflows.
+
+### `setup-project`
+
+Guide setting up a new project: detect stacks, recommend packs, install essentials.
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `project_name` | string | yes | Name of the project to set up |
+
+Detects technology stacks in the workspace, recommends matching packs, checks which are already installed, and returns step-by-step guidance for project setup.
+
+### `recommend-packs`
+
+Return pack recommendations based on detected or specified stacks.
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `stacks` | string | no | Comma-separated list of stacks (auto-detects if empty) |
+
+Resolution order: (1) explicit `stacks` argument, (2) configured stacks, (3) auto-detected stacks. Returns recommended packs with install status.
+
+### `audit-packs`
+
+Audit installed packs: versions, contents, and totals. No parameters.
+
+Returns a summary of all installed packs including version, repo, install date, lists of skills/agents/hooks, and aggregate totals.
+
+### `search-marketplace`
+
+Search and display available packs with descriptions.
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `query` | string | yes | Search keyword |
+| `stack` | string | no | Filter by technology stack |
+
+Searches the built-in index of 17 known packs and returns matching results with install instructions.
+
+### `onboard-project`
+
+Full onboarding: create project, detect stacks, install packs, configure workspace.
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `project_name` | string | yes | Name of the project |
+| `description` | string | no | Brief project description |
+
+Returns a numbered step-by-step guide: create project, set stacks, install recommended packs, verify installation, start working. Adapts recommendations to detected stacks.
 
 ---
 

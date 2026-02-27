@@ -1,6 +1,6 @@
 // Command tools-marketplace is the entry point for the tools.marketplace plugin
-// binary. It provides 15 MCP tools for managing installable packs of skills,
-// agents, and hooks from GitHub repositories.
+// binary. It provides 15 MCP tools and 5 MCP prompts for managing installable
+// packs of skills, agents, and hooks from GitHub repositories.
 package main
 
 import (
@@ -37,6 +37,7 @@ func main() {
 		Workspace: *workspace,
 	}
 	mp.RegisterTools(builder)
+	mp.RegisterPrompts(builder)
 
 	p := builder.BuildWithTools()
 	p.ParseFlags()

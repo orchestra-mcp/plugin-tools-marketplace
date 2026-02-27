@@ -70,3 +70,25 @@ func (mp *MarketplacePlugin) RegisterTools(builder *plugin.PluginBuilder) {
 		"Get the project's detected or configured stacks",
 		tools.GetProjectStacksSchema(), tools.GetProjectStacks(ps, ws))
 }
+
+// RegisterPrompts registers all 5 marketplace prompts with the plugin builder.
+func (mp *MarketplacePlugin) RegisterPrompts(builder *plugin.PluginBuilder) {
+	ps := mp.Storage
+	ws := mp.Workspace
+
+	builder.RegisterPrompt("setup-project",
+		"Guide setting up a new project: detect stacks, recommend packs, install essentials",
+		tools.SetupProjectArgs(), tools.SetupProject(ps, ws))
+	builder.RegisterPrompt("recommend-packs",
+		"Return pack recommendations based on detected or specified stacks",
+		tools.RecommendPacksPromptArgs(), tools.RecommendPacksPrompt(ps, ws))
+	builder.RegisterPrompt("audit-packs",
+		"Audit installed packs: versions, updates available, contents summary",
+		tools.AuditPacksArgs(), tools.AuditPacks(ps, ws))
+	builder.RegisterPrompt("search-marketplace",
+		"Search and display available packs with descriptions",
+		tools.SearchMarketplaceArgs(), tools.SearchMarketplace())
+	builder.RegisterPrompt("onboard-project",
+		"Full onboarding: create project, detect stacks, install packs, configure workspace",
+		tools.OnboardProjectArgs(), tools.OnboardProject(ps, ws))
+}
