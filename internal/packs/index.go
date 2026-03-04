@@ -31,6 +31,13 @@ var KnownPacks = []PackInfo{
 	{Repo: "github.com/orchestra-mcp/pack-native-csharp", Stacks: []string{"csharp"}, Description: "C#/Windows plugin skills", Tags: []string{"csharp", "windows"}},
 	{Repo: "github.com/orchestra-mcp/pack-native-gtk", Stacks: []string{"c"}, Description: "GTK4/Linux desktop skills", Tags: []string{"gtk", "linux"}},
 	{Repo: "github.com/orchestra-mcp/pack-analytics", Stacks: []string{"*"}, Description: "ClickHouse analytics skills", Tags: []string{"analytics", "clickhouse"}},
+	{Repo: "github.com/orchestra-mcp/pack-powersync", Stacks: []string{"react", "react-native", "typescript", "flutter"}, Description: "PowerSync offline-first sync (Postgres/MongoDB to SQLite)", Tags: []string{"powersync", "offline-first", "sync", "sqlite", "local-first"}},
+	{Repo: "github.com/orchestra-mcp/pack-laravel", Stacks: []string{"php"}, Description: "Laravel PHP framework (Eloquent, Blade, Artisan)", Tags: []string{"laravel", "php", "eloquent", "blade", "artisan"}},
+	{Repo: "github.com/orchestra-mcp/pack-inertia", Stacks: []string{"php", "react", "typescript"}, Description: "Inertia.js server-driven SPAs (Laravel + React/Vue)", Tags: []string{"inertia", "laravel", "spa", "monolith"}},
+	{Repo: "github.com/orchestra-mcp/pack-tailwind", Stacks: []string{"react", "typescript", "php"}, Description: "Tailwind CSS v4 styling and design patterns", Tags: []string{"tailwind", "css", "styling", "responsive", "dark-mode"}},
+	{Repo: "github.com/orchestra-mcp/pack-gcp", Stacks: []string{"docker", "go", "typescript"}, Description: "Google Cloud Platform (Cloud Run, Cloud SQL, Cloud Build)", Tags: []string{"gcp", "cloud-run", "cloud-sql", "infrastructure"}},
+	{Repo: "github.com/orchestra-mcp/pack-docker", Stacks: []string{"docker"}, Description: "Docker containerization (Dockerfile, Compose, multi-stage)", Tags: []string{"docker", "containers", "compose", "devops"}},
+	{Repo: "github.com/orchestra-mcp/pack-go-adk", Stacks: []string{"go"}, Description: "Google Go ADK (AI agents, tools, Gemini, multi-agent)", Tags: []string{"go-adk", "agents", "gemini", "ai", "google"}},
 }
 
 // RecommendPacks returns packs matching the given stacks.
