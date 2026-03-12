@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	pluginv1 "github.com/orchestra-mcp/gen-go/orchestra/plugin/v1"
@@ -24,14 +25,16 @@ func DetectStacksSchema() *structpb.Struct {
 
 func DetectStacks(workspace string) ToolHandler {
 	return func(ctx context.Context, req *pluginv1.ToolRequest) (*pluginv1.ToolResponse, error) {
+		log.Printf("[detect_stacks] scanning workspace: %s", workspace)
 		detected := packs.DetectStacks(workspace)
 
 		if len(detected) == 0 {
-			return helpers.TextResult("## Stack Detection\n\nNo technology stacks detected in this workspace."), nil
+			return helpers.TextResult(fmt.Sprintf("## Stack Detection\n\n**Workspace:** `%s`\n\nNo technology stacks detected in this workspace.", workspace)), nil
 		}
 
 		var b strings.Builder
 		fmt.Fprintf(&b, "## Detected Stacks (%d)\n\n", len(detected))
+		fmt.Fprintf(&b, "**Workspace:** `%s`\n\n", workspace)
 		fmt.Fprintf(&b, "| Stack | Evidence |\n")
 		fmt.Fprintf(&b, "|-------|----------|\n")
 		for _, s := range detected {
