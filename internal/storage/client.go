@@ -53,18 +53,62 @@ func (ps *PackStorage) ReadRegistry(ctx context.Context) (*PackRegistry, int64, 
 	if resp.Metadata == nil {
 		return &PackRegistry{Packs: make(map[string]*PackEntry)}, resp.Version, nil
 	}
-	raw, err := json.Marshal(resp.Metadata.AsMap())
+
+	asMap := resp.Metadata.AsMap()
+	reg := &PackRegistry{Packs: make(map[string]*PackEntry)}
+
+	// Extract "packs" from the metadata — handle both map and array formats.
+	packsRaw, ok := asMap["packs"]
+	if !ok {
+		return reg, resp.Version, nil
+	}
+
+	switch packs := packsRaw.(type) {
+	case map[string]any:
+		// Expected format: {"pack-name": {fields...}}
+		for name, entryRaw := range packs {
+			entry, err := parsePackEntry(entryRaw)
+			if err != nil {
+				continue // skip malformed entries
+			}
+			reg.Packs[name] = entry
+		}
+	case []any:
+		// Legacy array format: [{name: "...", fields...}]
+		for _, item := range packs {
+			itemMap, ok := item.(map[string]any)
+			if !ok {
+				continue
+			}
+			name, _ := itemMap["name"].(string)
+			if name == "" {
+				continue
+			}
+			entry, err := parsePackEntry(item)
+			if err != nil {
+				continue
+			}
+			reg.Packs[name] = entry
+		}
+	default:
+		// Unrecognised format — return empty registry rather than crash.
+		return reg, resp.Version, nil
+	}
+
+	return reg, resp.Version, nil
+}
+
+// parsePackEntry converts a raw any value (typically map[string]any) into a PackEntry.
+func parsePackEntry(raw any) (*PackEntry, error) {
+	data, err := json.Marshal(raw)
 	if err != nil {
-		return nil, 0, fmt.Errorf("marshal registry metadata: %w", err)
+		return nil, err
 	}
-	var reg PackRegistry
-	if err := json.Unmarshal(raw, &reg); err != nil {
-		return nil, 0, fmt.Errorf("parse registry: %w", err)
+	var entry PackEntry
+	if err := json.Unmarshal(data, &entry); err != nil {
+		return nil, err
 	}
-	if reg.Packs == nil {
-		reg.Packs = make(map[string]*PackEntry)
-	}
-	return &reg, resp.Version, nil
+	return &entry, nil
 }
 
 // WriteRegistry persists the pack registry to storage.
@@ -119,6 +163,45 @@ func (ps *PackStorage) WriteStacks(ctx context.Context, stacks []string, expecte
 		return 0, fmt.Errorf("build stacks metadata: %w", err)
 	}
 	return ps.storageWrite(ctx, stacksPath, meta, nil, expectedVersion)
+}
+
+// Send delegates to the underlying storage client for direct storage operations.
+func (ps *PackStorage) Send(ctx context.Context, req *pluginv1.PluginRequest) (*pluginv1.PluginResponse, error) {
+	return ps.client.Send(ctx, req)
+}
+
+// StorageRead performs a low-level storage read and returns the response.
+func (ps *PackStorage) StorageRead(ctx context.Context, path string) (*pluginv1.StorageReadResponse, error) {
+	return ps.storageRead(ctx, path)
+}
+
+// StorageWrite performs a low-level storage write and returns the new version.
+func (ps *PackStorage) StorageWrite(ctx context.Context, path string, metadata *structpb.Struct, content []byte, expectedVersion int64) (int64, error) {
+	return ps.storageWrite(ctx, path, metadata, content, expectedVersion)
+}
+
+// StorageDelete performs a low-level storage delete.
+func (ps *PackStorage) StorageDelete(ctx context.Context, path string) error {
+	resp, err := ps.client.Send(ctx, &pluginv1.PluginRequest{
+		RequestId: helpers.NewUUID(),
+		Request: &pluginv1.PluginRequest_StorageDelete{
+			StorageDelete: &pluginv1.StorageDeleteRequest{
+				Path:        path,
+				StorageType: "markdown",
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	sd := resp.GetStorageDelete()
+	if sd == nil {
+		return fmt.Errorf("unexpected response type for storage delete")
+	}
+	if !sd.Success {
+		return fmt.Errorf("storage delete failed for path: %s", path)
+	}
+	return nil
 }
 
 // --- Low-level storage protocol ---

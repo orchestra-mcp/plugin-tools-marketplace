@@ -22,7 +22,7 @@ func InstallPackSchema() *structpb.Struct {
 	s, _ := structpb.NewStruct(map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			"repo":    map[string]any{"type": "string", "description": "GitHub repo (e.g., github.com/orchestra-mcp/pack-go-backend)"},
+			"repo":    map[string]any{"type": "string", "description": "Pack name or GitHub repo. Short names (e.g., 'go-backend'), org/repo (e.g., 'orchestra-mcp/pack-go-backend'), or full path (e.g., 'github.com/orchestra-mcp/pack-go-backend') are all supported."},
 			"version": map[string]any{"type": "string", "description": "Version tag (optional, defaults to latest)"},
 		},
 		"required": []any{"repo"},
@@ -36,8 +36,11 @@ func InstallPack(ps *storage.PackStorage, workspace string) ToolHandler {
 			return helpers.ErrorResult("validation_error", err.Error()), nil
 		}
 
-		repo := helpers.GetString(req.Arguments, "repo")
+		repoInput := helpers.GetString(req.Arguments, "repo")
 		version := helpers.GetString(req.Arguments, "version")
+
+		// Resolve short names (e.g., "go-backend") and org/repo to full paths.
+		repo := packs.ResolvePackRepo(repoInput)
 
 		manifest, err := packs.InstallPack(workspace, repo, version)
 		if err != nil {

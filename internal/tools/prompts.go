@@ -39,7 +39,10 @@ func SetupProject(ps *storage.PackStorage, workspace string) PromptHandler {
 		}
 
 		// Check installed packs.
-		reg, _, _ := ps.ReadRegistry(ctx)
+		reg, _, err := ps.ReadRegistry(ctx)
+		if err != nil {
+			reg = &storage.PackRegistry{Packs: make(map[string]*storage.PackEntry)}
+		}
 		installed := make(map[string]bool)
 		for name := range reg.Packs {
 			installed[name] = true
@@ -125,7 +128,10 @@ func RecommendPacksPrompt(ps *storage.PackStorage, workspace string) PromptHandl
 			fmt.Fprintf(&b, "- Use `search_packs` to browse all available packs\n")
 		} else {
 			recommended := packs.RecommendPacks(stackNames)
-			reg, _, _ := ps.ReadRegistry(ctx)
+			reg, _, err := ps.ReadRegistry(ctx)
+			if err != nil {
+				reg = &storage.PackRegistry{Packs: make(map[string]*storage.PackEntry)}
+			}
 			installed := make(map[string]bool)
 			for name := range reg.Packs {
 				installed[name] = true
@@ -163,7 +169,10 @@ func AuditPacksArgs() []*pluginv1.PromptArgument {
 
 func AuditPacks(ps *storage.PackStorage, workspace string) PromptHandler {
 	return func(ctx context.Context, req *pluginv1.PromptGetRequest) (*pluginv1.PromptGetResponse, error) {
-		reg, _, _ := ps.ReadRegistry(ctx)
+		reg, _, err := ps.ReadRegistry(ctx)
+		if err != nil {
+			reg = &storage.PackRegistry{Packs: make(map[string]*storage.PackEntry)}
+		}
 
 		var b strings.Builder
 		if len(reg.Packs) == 0 {

@@ -12,7 +12,7 @@ type MarketplacePlugin struct {
 	Workspace string
 }
 
-// RegisterTools registers all 15 marketplace tools with the plugin builder.
+// RegisterTools registers all 24 marketplace tools with the plugin builder.
 func (mp *MarketplacePlugin) RegisterTools(builder *plugin.PluginBuilder) {
 	ps := mp.Storage
 	ws := mp.Workspace
@@ -61,6 +61,39 @@ func (mp *MarketplacePlugin) RegisterTools(builder *plugin.PluginBuilder) {
 	builder.RegisterTool("get_agent",
 		"Read an agent's full content",
 		tools.GetAgentSchema(), tools.GetAgent(ws))
+
+	// --- Skill CRUD (3) ---
+	builder.RegisterTool("create_skill",
+		"Create a new skill with name, slug, description, and content",
+		tools.CreateSkillSchema(), tools.CreateSkill(ps))
+	builder.RegisterTool("update_skill",
+		"Update an existing skill's fields",
+		tools.UpdateSkillSchema(), tools.UpdateSkill(ps))
+	builder.RegisterTool("delete_skill",
+		"Delete a skill by slug",
+		tools.DeleteSkillSchema(), tools.DeleteSkill(ps))
+
+	// --- Agent CRUD (3) ---
+	builder.RegisterTool("create_agent",
+		"Create a new agent with name, slug, description, and content",
+		tools.CreateAgentSchema(), tools.CreateAgent(ps))
+	builder.RegisterTool("update_agent",
+		"Update an existing agent's fields",
+		tools.UpdateAgentSchema(), tools.UpdateAgent(ps))
+	builder.RegisterTool("delete_agent",
+		"Delete an agent by slug",
+		tools.DeleteAgentSchema(), tools.DeleteAgent(ps))
+
+	// --- Hook CRUD (3) ---
+	builder.RegisterTool("create_hook",
+		"Create a new hook with name, slug, description, script, and event type",
+		tools.CreateHookSchema(), tools.CreateHook(ps))
+	builder.RegisterTool("update_hook",
+		"Update an existing hook's fields",
+		tools.UpdateHookSchema(), tools.UpdateHook(ps))
+	builder.RegisterTool("delete_hook",
+		"Delete a hook by slug",
+		tools.DeleteHookSchema(), tools.DeleteHook(ps))
 
 	// --- Configuration (2) ---
 	builder.RegisterTool("set_project_stacks",

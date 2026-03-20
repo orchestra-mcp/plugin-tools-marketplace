@@ -3,7 +3,7 @@ package tools
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	pluginv1 "github.com/orchestra-mcp/gen-go/orchestra/plugin/v1"
@@ -25,7 +25,7 @@ func DetectStacksSchema() *structpb.Struct {
 
 func DetectStacks(workspace string) ToolHandler {
 	return func(ctx context.Context, req *pluginv1.ToolRequest) (*pluginv1.ToolResponse, error) {
-		log.Printf("[detect_stacks] scanning workspace: %s", workspace)
+		slog.Debug("scanning workspace for stacks", "workspace", workspace)
 		detected := packs.DetectStacks(workspace)
 
 		if len(detected) == 0 {
@@ -85,7 +85,10 @@ func RecommendPacks(ps *storage.PackStorage, workspace string) ToolHandler {
 		recommended := packs.RecommendPacks(stackNames)
 
 		// Check which are already installed.
-		reg, _, _ := ps.ReadRegistry(ctx)
+		reg, _, err := ps.ReadRegistry(ctx)
+		if err != nil {
+			return helpers.ErrorResult("storage_error", fmt.Sprintf("read registry: %v", err)), nil
+		}
 		installed := make(map[string]bool)
 		for name := range reg.Packs {
 			installed[name] = true
