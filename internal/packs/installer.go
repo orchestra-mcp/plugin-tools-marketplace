@@ -19,9 +19,10 @@ type PackManifest struct {
 	License     string   `json:"license"`
 	Stacks      []string `json:"stacks"`
 	Contents    struct {
-		Skills []string `json:"skills"`
-		Agents []string `json:"agents"`
-		Hooks  []string `json:"hooks"`
+		Skills    []string `json:"skills"`
+		Agents    []string `json:"agents"`
+		Hooks     []string `json:"hooks"`
+		Workflows []string `json:"workflows"`
 	} `json:"contents"`
 	Tags []string `json:"tags"`
 }
@@ -129,11 +130,20 @@ func InstallPack(workspace, repo, version string) (*PackManifest, error) {
 		os.Chmod(dst, 0755)
 	}
 
+	// Copy workflows.
+	for _, name := range manifest.Contents.Workflows {
+		src := filepath.Join(tmpDir, "workflow", name)
+		dst := filepath.Join(claudeDir, "workflows", name)
+		if err := copyFile(src, dst); err != nil {
+			return nil, fmt.Errorf("copy workflow %s: %w", name, err)
+		}
+	}
+
 	return &manifest, nil
 }
 
 // RemovePack removes installed files for a pack.
-func RemovePack(workspace string, skills, agents, hooks []string) error {
+func RemovePack(workspace string, skills, agents, hooks, workflows []string) error {
 	claudeDir := filepath.Join(workspace, ".claude")
 
 	for _, name := range skills {
@@ -144,6 +154,9 @@ func RemovePack(workspace string, skills, agents, hooks []string) error {
 	}
 	for _, name := range hooks {
 		os.Remove(filepath.Join(claudeDir, "hooks", name+".sh"))
+	}
+	for _, name := range workflows {
+		os.Remove(filepath.Join(claudeDir, "workflows", name))
 	}
 	return nil
 }

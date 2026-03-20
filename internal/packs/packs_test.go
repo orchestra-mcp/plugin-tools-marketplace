@@ -287,7 +287,7 @@ func TestRemovePack(t *testing.T) {
 	os.MkdirAll(hookDir, 0755)
 	os.WriteFile(filepath.Join(hookDir, "rm-hook.sh"), []byte("hook"), 0644)
 
-	err := RemovePack(dir, []string{"rm-skill"}, []string{"rm-agent"}, []string{"rm-hook"})
+	err := RemovePack(dir, []string{"rm-skill"}, []string{"rm-agent"}, []string{"rm-hook"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -301,6 +301,146 @@ func TestRemovePack(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(hookDir, "rm-hook.sh")); !os.IsNotExist(err) {
 		t.Error("hook file should be removed")
+	}
+}
+
+// --- Workflow installer tests ---
+
+func TestListInstalledWorkflows(t *testing.T) {
+	dir := t.TempDir()
+	wfDir := filepath.Join(dir, ".claude", "workflows")
+	os.MkdirAll(wfDir, 0755)
+	os.WriteFile(filepath.Join(wfDir, "default.yaml"), []byte("name: test\n"), 0644)
+	os.WriteFile(filepath.Join(wfDir, "custom.yaml"), []byte("name: custom\n"), 0644)
+
+	entries, err := os.ReadDir(wfDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 2 {
+		t.Errorf("expected 2 workflow files, got %d", len(entries))
+	}
+}
+
+func TestRemovePackIncludesWorkflows(t *testing.T) {
+	dir := t.TempDir()
+
+	wfDir := filepath.Join(dir, ".claude", "workflows")
+	os.MkdirAll(wfDir, 0755)
+	wfFile := filepath.Join(wfDir, "my-workflow.yaml")
+	os.WriteFile(wfFile, []byte("name: my-workflow\n"), 0644)
+
+	err := RemovePack(dir, nil, nil, nil, []string{"my-workflow.yaml"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(wfFile); !os.IsNotExist(err) {
+		t.Error("workflow file should be removed")
+	}
+}
+
+func TestRemovePackWorkflowsNil(t *testing.T) {
+	dir := t.TempDir()
+	// nil workflows slice should not panic
+	err := RemovePack(dir, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRemovePackWorkflowsEmpty(t *testing.T) {
+	dir := t.TempDir()
+	err := RemovePack(dir, nil, nil, nil, []string{})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRemovePackMixedContent(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create skill, hook, and workflow.
+	skillDir := filepath.Join(dir, ".claude", "skills", "my-skill")
+	os.MkdirAll(skillDir, 0755)
+	os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte("skill"), 0644)
+
+	hookDir := filepath.Join(dir, ".claude", "hooks")
+	os.MkdirAll(hookDir, 0755)
+	hookFile := filepath.Join(hookDir, "my-hook.sh")
+	os.WriteFile(hookFile, []byte("#!/bin/bash"), 0644)
+
+	wfDir := filepath.Join(dir, ".claude", "workflows")
+	os.MkdirAll(wfDir, 0755)
+	wfFile := filepath.Join(wfDir, "my-workflow.yaml")
+	os.WriteFile(wfFile, []byte("name: x\n"), 0644)
+
+	err := RemovePack(dir,
+		[]string{"my-skill"},
+		nil,
+		[]string{"my-hook"},
+		[]string{"my-workflow.yaml"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := os.Stat(skillDir); !os.IsNotExist(err) {
+		t.Error("skill dir should be removed")
+	}
+	if _, err := os.Stat(hookFile); !os.IsNotExist(err) {
+		t.Error("hook file should be removed")
+	}
+	if _, err := os.Stat(wfFile); !os.IsNotExist(err) {
+		t.Error("workflow file should be removed")
+	}
+}
+
+func TestPackManifestParsesWorkflows(t *testing.T) {
+	raw := `{
+		"name": "test/pack-x",
+		"version": "0.1.0",
+		"contents": {
+			"skills": ["skill-a"],
+			"agents": [],
+			"hooks": [],
+			"workflows": ["default.yaml", "custom.yaml"]
+		}
+	}`
+
+	var m PackManifest
+	if err := json.Unmarshal([]byte(raw), &m); err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Contents.Workflows) != 2 {
+		t.Errorf("expected 2 workflows, got %d", len(m.Contents.Workflows))
+	}
+	if m.Contents.Workflows[0] != "default.yaml" {
+		t.Errorf("expected default.yaml, got %q", m.Contents.Workflows[0])
+	}
+	if m.Contents.Workflows[1] != "custom.yaml" {
+		t.Errorf("expected custom.yaml, got %q", m.Contents.Workflows[1])
+	}
+}
+
+func TestPackManifestMissingWorkflows(t *testing.T) {
+	// Packs without a workflows field should parse cleanly with nil slice.
+	raw := `{
+		"name": "test/pack-old",
+		"version": "0.1.0",
+		"contents": {
+			"skills": [],
+			"agents": [],
+			"hooks": []
+		}
+	}`
+
+	var m PackManifest
+	if err := json.Unmarshal([]byte(raw), &m); err != nil {
+		t.Fatal(err)
+	}
+	if m.Contents.Workflows != nil && len(m.Contents.Workflows) != 0 {
+		t.Errorf("expected empty workflows, got %v", m.Contents.Workflows)
 	}
 }
 

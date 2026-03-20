@@ -29,6 +29,7 @@ type PackEntry struct {
 	Skills      []string `json:"skills"`
 	Agents      []string `json:"agents"`
 	Hooks       []string `json:"hooks"`
+	Workflows   []string `json:"workflows,omitempty"`
 }
 
 // PackStorage provides operations for reading and writing the pack registry.
